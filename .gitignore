@@ -8,5 +8,4 @@ config.py
 *.log 
 *.zip 
 !data/*.csv 
-data/* 
 models/* 
