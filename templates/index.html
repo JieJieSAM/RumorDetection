@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI谣言检测系统 - 多模态谣言识别与验证平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36BFFA',
+            success: '#00B42A',
+            danger: '#F53F3F',
+            warning: '#FF7D00',
+            neutral: '#86909C',
+            light: '#F2F3F5',
+            dark: '#1D2129'
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .transition-all-300 {
+        transition: all 300ms ease-in-out;
+      }
+      .card-hover {
+        @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #165DFF 0%, #36BFFA 100%);
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-dark">
+  <header id="navbar" class="fixed w-full bg-white/95 shadow-sm z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <a href="#" class="flex items-center">
+            <i class="fa fa-shield text-primary text-2xl mr-2"></i>
+            <span class="text-xl font-semibold text-primary">AI谣言检测系统</span>
+          </a>
+        </div>
+
+        <nav class="hidden md:block">
+          <ul class="flex space-x-8">
+            <li><a href="#home" class="text-dark hover:text-primary font-medium transition-colors">首页</a></li>
+            <li><a href="#detector" class="text-dark hover:text-primary font-medium transition-colors">谣言检测</a></li>
+            <li><a href="#interpreter" class="text-dark hover:text-primary font-medium transition-colors">结果解释</a></li>
+            <li><a href="#workflow" class="text-dark hover:text-primary font-medium transition-colors">工作流程</a></li>
+            <li><a href="#dataset" class="text-dark hover:text-primary font-medium transition-colors">数据集</a></li>
+          </ul>
+        </nav>
+
+        <div class="flex items-center">
+          <button class="hidden md:block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors mr-3">
+            登录
+          </button>
+          <button class="hidden md:block px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors">
+            注册
+          </button>
+          <button id="mobile-menu-button" class="md:hidden text-gray-500 hover:text-primary">
+            <i class="fa fa-bars text-xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <a href="#home" class="block px-3 py-2 rounded-md text-base font-medium text-dark hover:bg-primary/5 hover:text-primary">首页</a>
+        <a href="#detector" class="block px-3 py-2 rounded-md text-base font-medium text-dark hover:bg-primary/5 hover:text-primary">谣言检测</a>
+        <a href="#interpreter" class="block px-3 py-2 rounded-md text-base font-medium text-dark hover:bg-primary/5 hover:text-primary">结果解释</a>
+        <a href="#workflow" class="block px-3 py-2 rounded-md text-base font-medium text-dark hover:bg-primary/5 hover:text-primary">工作流程</a>
+        <a href="#dataset" class="block px-3 py-2 rounded-md text-base font-medium text-dark hover:bg-primary/5 hover:text-primary">数据集</a>
+        <div class="flex space-x-2 px-3 py-2">
+          <button class="flex-1 px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors">
+            登录
+          </button>
+          <button class="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors">
+            注册
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="home" class="pt-24 pb-16 md:pt-32 md:pb-24 gradient-bg text-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+          <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-shadow mb-4">
+            多模态AI谣言<br>检测与验证平台
+          </h1>
+          <p class="text-[clamp(1rem,2vw,1.25rem)] text-white/90 mb-8 max-w-lg">
+            基于先进大模型技术，结合文本、图像和视频多模态分析，提供精准的谣言检测、可解释的分析报告和完整的证据链追踪。
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#detector" class="px-6 py-3 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
+              开始检测 <i class="fa fa-arrow-right ml-1"></i>
+            </a>
+            <a href="#workflow" class="px-6 py-3 bg-transparent border border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors">
+              了解工作原理
+            </a>
+          </div>
+        </div>
+        <div class="md:w-1/2">
+          <img src="https://picsum.photos/id/180/600/400" alt="AI谣言检测系统演示" class="rounded-xl shadow-2xl w-full object-cover h-[300px] md:h-[400px]">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+        <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl card-hover">
+          <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+            <i class="fa fa-check-circle text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">多模态检测</h3>
+          <p class="text-white/80">支持文本、图像、视频等多种类型内容的谣言检测，全面覆盖信息传播形式。</p>
+        </div>
+        <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl card-hover">
+          <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+            <i class="fa fa-search text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">可解释分析</h3>
+          <p class="text-white/80">提供详细的检测报告，包括关键证据、溯源路径和推理过程，增强结果可信度。</p>
+        </div>
+        <div class="bg-white/10 backdrop-blur-sm p-6 rounded-xl card-hover">
+          <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+            <i class="fa fa-shield text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">混合验证机制</h3>
+          <p class="text-white/80">结合AI检测与传统安全技术，如人工检查和数据库比对，提高检测准确性。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="detector" class="py-16 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">谣言检测器</h2>
+        <p class="text-neutral max-w-2xl mx-auto">基于大模型的多模态谣言检测，支持文本、图像和视频输入，快速判断信息真伪并给出置信度</p>
+      </div>
+
+      <div class="bg-light rounded-2xl p-6 md:p-8 shadow-sm">
+        <div class="flex flex-wrap border-b border-gray-200 mb-6">
+          <button class="input-type-btn active px-4 py-2 font-medium text-primary border-b-2 border-primary" data-type="text">
+            <i class="fa fa-file-text-o mr-1"></i> 文本检测
+          </button>
+          <button class="input-type-btn px-4 py-2 font-medium text-neutral hover:text-primary" data-type="image">
+            <i class="fa fa-picture-o mr-1"></i> 图像检测
+          </button>
+          <button class="input-type-btn px-4 py-2 font-medium text-neutral hover:text-primary" data-type="video">
+            <i class="fa fa-video-camera mr-1"></i> 视频检测
+          </button>
+          <button class="input-type-btn px-4 py-2 font-medium text-neutral hover:text-primary" data-type="hybrid">
+            <i class="fa fa-object-group mr-1"></i> 混合检测
+          </button>
+        </div>
+
+        <div class="input-container" id="text-input">
+          <div class="mb-4">
+            <label for="rumor-text" class="block text-sm font-medium text-gray-700 mb-1">请输入需要检测的文本内容：</label>
+            <textarea id="rumor-text" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="例如：最近流传一种说法，称某种药物可以完全治愈新冠肺炎，无需接种疫苗..."></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">选择内容领域：</label>
+            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+              <option value="health">健康医疗</option>
+              <option value="politics">政治新闻</option>
+              <option value="finance">财经信息</option>
+              <option value="science">科学技术</option>
+              <option value="other">其他领域</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-container hidden" id="image-input">
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors">
+            <i class="fa fa-cloud-upload text-4xl text-neutral mb-3"></i>
+            <p class="mb-2">点击上传图像或拖拽图像至此处</p>
+            <p class="text-sm text-neutral mb-4">支持 JPG、PNG 格式，文件大小不超过 10MB</p>
+            <label class="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors cursor-pointer">
+              <i class="fa fa-folder-open mr-1"></i> 选择图像
+              <input type="file" accept="image/*" class="hidden">
+            </label>
+          </div>
+
+          <div class="mt-4">
+            <label for="image-description" class="block text-sm font-medium text-gray-700 mb-1">补充图像相关描述（可选）：</label>
+            <textarea id="image-description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="请描述图像中的内容或相关背景信息..."></textarea>
+          </div>
+        </div>
+
+        <div class="input-container hidden" id="video-input">
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors">
+            <i class="fa fa-cloud-upload text-4xl text-neutral mb-3"></i>
+            <p class="mb-2">点击上传视频或拖拽视频至此处</p>
+            <p class="text-sm text-neutral mb-4">支持 MP4、WebM 格式，文件大小不超过 100MB</p>
+            <label class="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors cursor-pointer">
+              <i class="fa fa-folder-open mr-1"></i> 选择视频
+              <input type="file" accept="video/*" class="hidden">
+            </label>
+          </div>
+
+          <div class="mt-4">
+            <label for="video-description" class="block text-sm font-medium text-gray-700 mb-1">补充视频相关描述（可选）：</label>
+            <textarea id="video-description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="请描述视频中的内容、来源或相关背景信息..."></textarea>
+          </div>
+        </div>
+
+        <div class="input-container hidden" id="hybrid-input">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">文本内容：</label>
+              <textarea rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="请输入相关文本内容..."></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">相关图像：</label>
+              <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors">
+                <i class="fa fa-cloud-upload text-2xl text-neutral mb-2"></i>
+                <p class="text-sm mb-2">上传或拖拽图像</p>
+                <label class="inline-block px-3 py-1 bg-light text-dark rounded-lg hover:bg-gray-200 transition-colors cursor-pointer text-sm">
+                  <i class="fa fa-folder-open mr-1"></i> 选择图像
+                  <input type="file" accept="image/*" class="hidden">
+                </label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">相关视频：</label>
+              <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors">
+                <i class="fa fa-cloud-upload text-2xl text-neutral mb-2"></i>
+                <p class="text-sm mb-2">上传或拖拽视频</p>
+                <label class="inline-block px-3 py-1 bg-light text-dark rounded-lg hover:bg-gray-200 transition-colors cursor-pointer text-sm">
+                  <i class="fa fa-folder-open mr-1"></i> 选择视频
+                  <input type="file" accept="video/*" class="hidden">
+                </label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">补充说明（可选）：</label>
+              <textarea rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="请提供更多相关背景信息或上下文..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 text-center">
+          <button id="detect-btn" class="px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-md">
+            <i class="fa fa-search mr-2"></i> 开始检测
+          </button>
+        </div>
+      </div>
+
+      <div id="result-container" class="mt-12 hidden">
+        <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">检测结果</h3>
+            <span id="detection-time" class="text-sm text-neutral">检测时间: 2023-05-15 14:30:25</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-light rounded-xl p-5">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-exclamation-triangle text-danger"></i>
+                </div>
+                <h4 class="font-medium">检测结论</h4>
+              </div>
+              <div id="detection-result" class="text-2xl font-bold text-danger">虚假信息</div>
+              <div class="text-sm text-neutral mt-1">基础置信度: <span id="confidence-level" class="font-medium">98.7%</span></div>
+            </div>
+
+            <div class="bg-light rounded-xl p-5">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-database"></i>
+                </div>
+                <h4 class="font-medium">检测方法</h4>
+              </div>
+              <div class="text-sm">
+                <div class="mb-1">多模态大模型分析</div>
+                <div class="mb-1">知识库比对</div>
+                <div class="mb-1">来源可信度评估</div>
+              </div>
+            </div>
+
+            <div class="bg-light rounded-xl p-5">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-history"></i>
+                </div>
+                <h4 class="font-medium">历史记录</h4>
+              </div>
+              <div class="text-sm">
+                <div class="mb-1">相同内容已检测: <span class="font-medium">328次</span></div>
+                <div class="mb-1">判定为谣言: <span class="font-medium">328次</span></div>
+                <div>首次检测时间: <span class="font-medium">2023-01-15</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-b border-gray-200 mb-6">
+            <div class="flex flex-wrap">
+              <button class="report-tab active px-4 py-2 font-medium text-primary border-b-2 border-primary" data-tab="summary">
+                摘要报告
+              </button>
+              <button class="report-tab px-4 py-2 font-medium text-neutral hover:text-primary" data-tab="evidence">
+                证据分析
+              </button>
+              <button class="report-tab px-4 py-2 font-medium text-neutral hover:text-primary" data-tab="explanation">
+                解释说明
+              </button>
+              <button class="report-tab px-4 py-2 font-medium text-neutral hover:text-primary" data-tab="comparison">
+                对比验证
+              </button>
+            </div>
+          </div>
+
+          <div class="report-content" id="summary-content">
+            <div class="bg-blue-50 border-l-4 border-primary p-4 mb-6">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fa fa-info-circle text-primary"></i>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-primary">关键发现</h3>
+                  <div class="mt-2 text-sm text-blue-700">
+                    <p>检测内容包含与事实不符的医疗信息，声称某种药物可以完全治愈新冠肺炎，无需接种疫苗。</p>
+                    <p class="mt-1">世界卫生组织和各国卫生部门明确表示，目前没有任何药物可以完全治愈新冠肺炎，接种疫苗仍然是预防和控制疫情的最有效手段。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h4 class="font-medium mb-2">内容分析</h4>
+              <div class="bg-light rounded-lg p-4">
+                <p class="text-sm">检测文本中包含以下可疑特征：</p>
+                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                  <li>夸大药物疗效：声称"完全治愈"，与现有医学认知不符</li>
+                  <li>误导性信息：否定疫苗的作用，与权威机构建议相悖</li>
+                  <li>缺乏科学依据：未引用任何临床研究或医学数据</li>
+                  <li>信息来源不可靠：文本来源为个人社交媒体账号，无专业资质</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-medium mb-2">传播风险评估</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-light rounded-lg p-3">
+                  <div class="text-sm font-medium mb-1">传播速度</div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                      <div class="bg-warning h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                    <span class="text-sm font-medium">高</span>
+                  </div>
+                </div>
+                <div class="bg-light rounded-lg p-3">
+                  <div class="text-sm font-medium mb-1">影响范围</div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                      <div class="bg-danger h-2 rounded-full" style="width: 90%"></div>
+                    </div>
+                    <span class="text-sm font-medium">极高</span>
+                  </div>
+                </div>
+                <div class="bg-light rounded-lg p-3">
+                  <div class="text-sm font-medium mb-1">危害程度</div>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                      <div class="bg-danger h-2 rounded-full" style="width: 85%"></div>
+                    </div>
+                    <span class="text-sm font-medium">高</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-content hidden" id="evidence-content">
+            <div class="mb-6">
+              <h4 class="font-medium mb-3">事实核查证据</h4>
+              <div class="space-y-4">
+                <div class="bg-light rounded-lg p-4 border-l-4 border-success">
+                  <div class="flex justify-between">
+                    <h5 class="font-medium">世界卫生组织 (WHO) 声明</h5>
+                    <span class="text-xs text-neutral">来源可信度: 99%</span>
+                  </div>
+                  <p class="text-sm mt-2">
+                    "目前没有任何药物可以完全治愈新冠肺炎。疫苗仍然是预防重症和死亡的最有效方法，所有符合条件的人都应该接种。"
+                  </p>
+                  <div class="mt-2 text-xs text-neutral">
+                    来源: <a href="#" class="text-primary hover:underline">https://www.who.int/news-room/q-a-detail/coronavirus-disease-(covid-19)-vaccines</a>
+                  </div>
+                </div>
+
+                <div class="bg-light rounded-lg p-4 border-l-4 border-success">
+                  <div class="flex justify-between">
+                    <h5 class="font-medium">中国疾病预防控制中心 (CDC) 指南</h5>
+                    <span class="text-xs text-neutral">来源可信度: 98%</span>
+                  </div>
+                  <p class="text-sm mt-2">
+                    "新冠肺炎的治疗需要综合考虑患者的具体情况，包括病情严重程度、年龄、基础疾病等。任何声称单一药物可以完全治愈的说法都是不科学的。"
+                  </p>
+                  <div class="mt-2 text-xs text-neutral">
+                    来源: <a href="#" class="text-primary hover:underline">https://www.chinacdc.cn/zhengcefg/s9491/202301/t20230110_264225.html</a>
+                  </div>
+                </div>
+
+                <div class="bg-light rounded-lg p-4 border-l-4 border-warning">
+                  <div class="flex justify-between">
+                    <h5 class="font-medium">相关研究论文</h5>
+                    <span class="text-xs text-neutral">来源可信度: 95%</span>
+                  </div>
+                  <p class="text-sm mt-2">
+                    "一项发表在《新英格兰医学杂志》上的研究表明，目前所有抗病毒药物只能减轻症状和缩短病程，无法完全治愈新冠肺炎。"
+                  </p>
+                  <div class="mt-2 text-xs text-neutral">
+                    来源: <a href="#" class="text-primary hover:underline">https://www.nejm.org/doi/full/10.1056/NEJMoa2301114</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-medium mb-3">文本特征分析</h4>
+              <div class="bg-light rounded-lg p-4">
+                <div class="mb-4">
+                  <h5 class="font-medium text-sm mb-2">可疑词汇分析</h5>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">完全治愈</span>
+                    <span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">无需接种</span>
+                    <span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">特效</span>
+                    <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">最新突破</span>
+                    <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">内部消息</span>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 class="font-medium text-sm mb-2">情感倾向分析</h5>
+                  <div class="flex items-center">
+                    <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                      <div class="bg-danger h-2 rounded-full" style="width: 85%"></div>
+                    </div>
+                    <span class="text-sm font-medium">极不客观</span>
+                  </div>
+                  <p class="text-xs text-neutral mt-1">文本情感倾向得分：-0.85（-1.0 至 +1.0 区间，负值表示负面/误导性）</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-content hidden" id="explanation-content">
+            <div class="mb-6">
+              <h4 class="font-medium mb-3">模型推理过程</h4>
+              <div class="bg-light rounded-lg p-4">
+                <div class="space-y-3">
+                  <div>
+                    <h5 class="font-medium text-sm">1. 文本理解与实体识别</h5>
+                    <p class="text-xs text-neutral mt-1">
+                      模型识别出文本中的关键实体："药物"、"新冠肺炎"、"疫苗"，并提取出核心观点："药物可以完全治愈新冠肺炎，无需接种疫苗"。
+                    </p>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-sm">2. 知识库比对</h5>
+                    <p class="text-xs text-neutral mt-1">
+                      将提取的观点与医学知识库进行比对，发现与世界卫生组织、中国疾控中心等权威机构发布的信息严重不符。
+                    </p>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-sm">3. 逻辑一致性检查</h5>
+                    <p class="text-xs text-neutral mt-1">
+                      分析文本中的逻辑关系，发现"完全治愈"与"无需接种"之间的因果关系缺乏科学依据支持，存在明显逻辑漏洞。
+                    </p>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-sm">4. 来源可信度评估</h5>
+                    <p class="text-xs text-neutral mt-1">
+                      评估信息来源为个人社交媒体账号，缺乏专业医学背景和资质，可信度较低。
+                    </p>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-sm">5. 综合判断</h5>
+                    <p class="text-xs text-neutral mt-1">
+                      综合以上分析，模型判断该信息为虚假医疗谣言，置信度为 98.7%。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-medium mb-3">可解释性可视化</h4>
+              <div class="bg-white rounded-lg p-4 border border-gray-100">
+                <canvas id="explanation-chart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-content hidden" id="comparison-content">
+            <div class="mb-6">
+              <h4 class="font-medium mb-3">与权威信息对比</h4>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">对比项</th>
+                      <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">检测内容</th>
+                      <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">权威信息</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                      <td class="px-4 py-3 text-sm">疾病治疗</td>
+                      <td class="px-4 py-3 text-sm">单一药物可完全治愈</td>
+                      <td class="px-4 py-3 text-sm">需综合治疗，尚无完全治愈方法</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 text-sm">疫苗作用</td>
+                      <td class="px-4 py-3 text-sm">无需接种</td>
+                      <td class="px-4 py-3 text-sm">预防重症和死亡的最有效手段</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 text-sm">科学依据</td>
+                      <td class="px-4 py-3 text-sm">无</td>
+                      <td class="px-4 py-3 text-sm">大量临床研究和实践经验</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3 text-sm">信息来源</td>
+                      <td class="px-4 py-3 text-sm">个人社交媒体</td>
+                      <td class="px-4 py-3 text-sm">世界卫生组织、各国疾控中心</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-medium mb-3">传统验证方法与AI检测结果对比</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-light rounded-lg p-4">
+                  <h5 class="font-medium text-sm mb-2">人工审核</h5>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs">准确性</span>
+                    <span class="text-xs font-medium">92%</span>
+                  </div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs">处理时间</span>
+                    <span class="text-xs font-medium">4-8小时</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs">成本</span>
+                    <span class="text-xs font-medium">高</span>
+                  </div>
+                </div>
+
+                <div class="bg-light rounded-lg p-4">
+                  <h5 class="font-medium text-sm mb-2">关键词匹配</h5>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs">准确性</span>
+                    <span class="text-xs font-medium">78%</span>
+                  </div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs">处理时间</span>
+                    <span class="text-xs font-medium">秒级</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs">成本</span>
+                    <span class="text-xs font-medium">低</span>
+                  </div>
+                </div>
+
+                <div class="bg-light rounded-lg p-4">
+                  <h5 class="font-medium text-sm mb-2">本系统AI检测</h5>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs">准确性</span>
+                    <span class="text-xs font-medium">98.7%</span>
+                  </div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs">处理时间</span>
+                    <span class="text-xs font-medium">15-30秒</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs">成本</span>
+                    <span class="text-xs font-medium">中</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 flex justify-end space-x-3">
+            <button class="px-4 py-2 text-sm font-medium text-neutral border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <i class="fa fa-download mr-1"></i> 下载报告
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors">
+              <i class="fa fa-share-alt mr-1"></i> 分享结果
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors">
+              继续检测
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="interpreter" class="py-16 bg-light">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">解释器模块</h2>
+        <p class="text-neutral max-w-2xl mx-auto">提供可解释的AI决策过程，生成结构化的检测报告，包含关键证据、溯源路径及推理过程</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="flex items-start">
+            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <i class="fa fa-search text-primary text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-2">关键证据提取</h3>
+              <p class="text-neutral mb-4">
+                系统自动从多模态内容中提取支持或反驳的关键证据，包括文本片段、图像特征和视频帧信息，并标注其来源和可信度。
+              </p>
+              <div class="bg-light rounded-lg p-4">
+                <h4 class="text-sm font-medium mb-2">示例：</h4>
+                <p class="text-xs text-neutral">
+                  "检测文本中提到的'特效药物'在权威医学数据库中没有记录，且与世界卫生组织发布的《新冠肺炎治疗指南》中的内容矛盾。"
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="flex items-start">
+            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <i class="fa fa-link text-primary text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-2">溯源路径分析</h3>
+              <p class="text-neutral mb-4">
+                追踪信息传播路径，分析内容来源的可信度，识别信息最初发布者及其资质，并评估传播过程中的信息失真情况。
+              </p>
+              <div class="bg-light rounded-lg p-4">
+                <h4 class="text-sm font-medium mb-2">示例：</h4>
+                <p class="text-xs text-neutral">
+                  "该信息最初由一个未认证的个人账号发布，随后被多个自媒体账号转发，传播过程中关键细节被夸大和扭曲。"
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="flex items-start">
+            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <i class="fa fa-lightbulb-o text-primary text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-2">推理过程解释</h3>
+              <p class="text-neutral mb-4">
+                展示AI模型的决策逻辑，解释如何从原始数据中提取特征，如何将这些特征与知识库进行比对，以及最终如何得出判断结果。
+              </p>
+              <div class="bg-light rounded-lg p-4">
+                <h4 class="text-sm font-medium mb-2">示例：</h4>
+                <p class="text-xs text-neutral">
+                  "模型检测到文本中使用了'绝对有效'、'完全治愈'等极端表述，结合医学知识库中关于新冠肺炎的治疗信息，判断该表述缺乏科学依据。"
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="flex items-start">
+            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <i class="fa fa-file-text text-primary text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-2">结构化报告生成</h3>
+              <p class="text-neutral mb-4">
+                将分析结果整合成易于理解的结构化报告，包括摘要结论、详细分析、证据列表和建议措施，支持多种格式导出。
+              </p>
+              <div class="bg-light rounded-lg p-4">
+                <h4 class="text-sm font-medium mb-2">报告内容示例：</h4>
+                <ul class="list-disc list-inside text-xs text-neutral space-y-1">
+                  <li>检测结论：虚假信息</li>
+                  <li>置信度：98.7%</li>
+                  <li>关键证据：3条</li>
+                  <li>溯源路径：个人账号→自媒体→社交媒体</li>
+                  <li>建议措施：标记为谣言、通知平台处理、提供权威信息链接</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="workflow" class="py-16 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">工作流程</h2>
+        <p class="text-neutral max-w-2xl mx-auto">结合AI技术与传统安全方法的混合验证机制，确保谣言检测的高效性和准确性</p>
+      </div>
+
+      <div class="relative">
+        <div class="hidden md:block absolute top-0 bottom-0 left-1/2 w-1 bg-gray-200 transform -translate-x-1/2"></div>
+
+        <div class="space-y-8">
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 md:pr-8 md:text-right mb-4 md:mb-0">
+              <h3 class="text-lg font-semibold mb-2">多模态内容输入</h3>
+              <p class="text-neutral">用户提交包含文本、图像、视频等多种形式的内容进行检测</p>
+            </div>
+            <div class="z-10 flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full mb-4 md:mb-0">
+              <span class="font-bold">1</span>
+            </div>
+            <div class="md:w-1/2 md:pl-8">
+              <div class="bg-light rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fa fa-file-text-o text-primary mr-2"></i>
+                  <span class="text-sm">文本内容</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-picture-o text-primary mr-2"></i>
+                  <span class="text-sm">图像/视频</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-tags text-primary mr-2"></i>
+                  <span class="text-sm">内容领域分类</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 md:pr-8 md:text-right order-1 md:order-2 mb-4 md:mb-0">
+              <div class="bg-light rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fa fa-magic text-primary mr-2"></i>
+                  <span class="text-sm">文本特征提取</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-image text-primary mr-2"></i>
+                  <span class="text-sm">图像识别与分析</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-film text-primary mr-2"></i>
+                  <span class="text-sm">视频内容理解</span>
+                </div>
+              </div>
+            </div>
+            <div class="z-10 flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full mb-4 md:mb-0 order-2 md:order-1">
+              <span class="font-bold">2</span>
+            </div>
+            <div class="md:w-1/2 md:pl-8 order-3">
+              <h3 class="text-lg font-semibold mb-2">多模态特征提取</h3>
+              <p class="text-neutral">使用预训练的多模态模型提取内容中的语义特征、视觉特征和时序特征</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 md:pr-8 md:text-right mb-4 md:mb-0">
+              <h3 class="text-lg font-semibold mb-2">AI模型检测</h3>
+              <p class="text-neutral">基于微调的大模型进行谣言检测，输出初步判断结果和置信度</p>
+            </div>
+            <div class="z-10 flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full mb-4 md:mb-0">
+              <span class="font-bold">3</span>
+            </div>
+            <div class="md:w-1/2 md:pl-8">
+              <div class="bg-light rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fa fa-brain text-primary mr-2"></i>
+                  <span class="text-sm">大模型推理</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-database text-primary mr-2"></i>
+                  <span class="text-sm">知识库比对</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-percent text-primary mr-2"></i>
+                  <span class="text-sm">置信度评估</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 md:pr-8 md:text-right order-1 md:order-2 mb-4 md:mb-0">
+              <div class="bg-light rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fa fa-search text-primary mr-2"></i>
+                  <span class="text-sm">人工审核</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-book text-primary mr-2"></i>
+                  <span class="text-sm">专家知识库验证</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-history text-primary mr-2"></i>
+                  <span class="text-sm">历史案例比对</span>
+                </div>
+              </div>
+            </div>
+            <div class="z-10 flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full mb-4 md:mb-0 order-2 md:order-1">
+              <span class="font-bold">4</span>
+            </div>
+            <div class="md:w-1/2 md:pl-8 order-3">
+              <h3 class="text-lg font-semibold mb-2">传统安全技术验证</h3>
+              <p class="text-neutral">结合人工审核、专家知识库和历史案例比对，对AI检测结果进行交叉验证</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 md:pr-8 md:text-right mb-4 md:mb-0">
+              <h3 class="text-lg font-semibold mb-2">解释器生成报告</h3>
+              <p class="text-neutral">基于AI决策过程和传统验证结果，生成可解释的结构化检测报告</p>
+            </div>
+            <div class="z-10 flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full mb-4 md:mb-0">
+              <span class="font-bold">5</span>
+            </div>
+            <div class="md:w-1/2 md:pl-8">
+              <div class="bg-light rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fa fa-file-text-o text-primary mr-2"></i>
+                  <span class="text-sm">摘要报告</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-exclamation-triangle text-primary mr-2"></i>
+                  <span class="text-sm">证据分析</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                  <span class="text-sm">解释说明</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 md:pr-8 md:text-right order-1 md:order-2 mb-4 md:mb-0">
+              <div class="bg-light rounded-lg p-4">
+                <div class="flex items-center">
+                  <i class="fa fa-share-alt text-primary mr-2"></i>
+                  <span class="text-sm">检测结果展示</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-download text-primary mr-2"></i>
+                  <span class="text-sm">报告导出</span>
+                </div>
+                <div class="flex items-center mt-2">
+                  <i class="fa fa-refresh text-primary mr-2"></i>
+                  <span class="text-sm">反馈与模型优化</span>
+                </div>
+              </div>
+            </div>
+            <div class="z-10 flex items-center justify-center w-12 h-12 bg-primary text-white rounded-full mb-4 md:mb-0 order-2 md:order-1">
+              <span class="font-bold">6</span>
+            </div>
+            <div class="md:w-1/2 md:pl-8 order-3">
+              <h3 class="text-lg font-semibold mb-2">结果展示与反馈</h3>
+              <p class="text-neutral">向用户展示检测结果和详细报告，并收集用户反馈用于模型持续优化</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dataset" class="py-16 bg-light">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">多模态谣言数据集</h2>
+        <p class="text-neutral max-w-2xl mx-auto">我们构建了一个包含健康领域多模态谣言样本的开放数据集，支持研究人员进行相关研究</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="text-4xl font-bold text-primary mb-2">10,000+</div>
+          <div class="text-lg font-semibold mb-2">多模态样本</div>
+          <p class="text-neutral">包含文本、图像和视频的多模态谣言样本，覆盖多种传播场景</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="text-4xl font-bold text-primary mb-2">50+</div>
+          <div class="text-lg font-semibold mb-2">谣言类别</div>
+          <p class="text-neutral">涵盖健康领域各类常见谣言，包括疫苗、疾病预防、治疗方法等</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+          <div class="text-4xl font-bold text-primary mb-2">95%</div>
+          <div class="text-lg font-semibold mb-2">标注准确率</div>
+          <p class="text-neutral">经过专业人员多重审核的高质量标注数据，确保研究可靠性</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+        <h3 class="text-xl font-semibold mb-6">数据集结构</h3>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据类型</th>
+                <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">样本数量</th>
+                <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标注信息</th>
+                <th class="px-4 py-3 bg-light text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据格式</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-4 py-3 text-sm">文本谣言</td>
+                <td class="px-4 py-3 text-sm">6,500+</td>
+                <td class="px-4 py-3 text-sm">
+                  <div>真实性标签（真/假）</div>
+                  <div class="text-xs text-neutral mt-1">谣言类别（疫苗、治疗、预防等）</div>
+                  <div class="text-xs text-neutral mt-1">关键错误点</div>
+                </td>
+                <td class="px-4 py-3 text-sm">JSON, TXT</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 text-sm">图像谣言</td>
+                <td class="px-4 py-3 text-sm">3,200+</td>
+                <td class="px-4 py-3 text-sm">
+                  <div>真实性标签（真/假）</div>
+                  <div class="text-xs text-neutral mt-1">谣言类别</div>
+                  <div class="text-xs text-neutral mt-1">图像中关键信息区域标注</div>
+                </td>
+                <td class="px-4 py-3 text-sm">JPG, PNG, JSON</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-3 text-sm">视频谣言</td>
+                <td class="px-4 py-3 text-sm">800+</td>
+                <td class="px-4 py-3 text-sm">
+                  <div>真实性标签（真/假）</div>
+                  <div class="text-xs text-neutral mt-1">谣言类别</div>
+                  <div class="text-xs text-neutral mt-1">关键帧标注</div>
+                  <div class="text-xs text-neutral mt-1">音频文本转录及标注</div>
+                </td>
+                <td class="px-4 py-3 text-sm">MP4, JSON</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-8">
+          <h3 class="text-xl font-semibold mb-4">数据集示例</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-light rounded-lg p-4">
+              <h4 class="font-medium mb-2">文本谣言示例</h4>
+              <div class="bg-white rounded-md p-3 text-sm">
+                <p class="font-medium mb-2">内容:</p>
+                <p>"最新研究表明，某种草药可以100%治愈新冠肺炎，无需接种疫苗。"</p>
+                <div class="mt-3">
+                  <p class="font-medium mb-1">标签:</p>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">虚假信息</span>
+                    <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">治疗类谣言</span>
+                    <span class="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs">新冠相关</span>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <p class="font-medium mb-1">关键错误点:</p>
+                  <p class="text-neutral text-xs">夸大疗效、误导性医疗建议、与权威医学指南冲突</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-light rounded-lg p-4">
+              <h4 class="font-medium mb-2">图像谣言示例</h4>
+              <div class="bg-white rounded-md p-3 text-sm">
+                <div class="relative rounded-md overflow-hidden mb-3">
+                  <img src="https://picsum.photos/id/237/400/200" alt="示例医学图像" class="w-full h-40 object-cover">
+                  <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <span class="text-white font-medium">图像示例</span>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-medium mb-1">标签:</p>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">虚假信息</span>
+                    <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">疫苗类谣言</span>
+                    <span class="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs">新冠相关</span>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <p class="font-medium mb-1">标注说明:</p>
+                  <p class="text-neutral text-xs">图像中包含误导性的疫苗副作用信息，标注区域显示篡改痕迹</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 text-center">
+          <a href="#" class="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-md">
+            <i class="fa fa-download mr-2"></i> 下载数据集
+          </a>
+          <p class="text-sm text-neutral mt-3">数据集遵循CC BY-NC-SA 4.0许可协议，可用于非商业研究用途</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-dark text-white pt-16 pb-8">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center mb-4">
+            <i class="fa fa-shield text-primary text-2xl mr-2"></i>
+            <span class="text-xl font-semibold">AI谣言检测系统</span>
+          </div>
+          <p class="text-gray-400 mb-4">
+            基于先进大模型技术，结合文本、图像和视频多模态分析，提供精准的谣言检测和可解释的分析报告。
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-linkedin"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-github"></i>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2">
+            <li><a href="#home" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+            <li><a href="#detector" class="text-gray-400 hover:text-white transition-colors">谣言检测</a></li>
+            <li><a href="#interpreter" class="text-gray-400 hover:text-white transition-colors">结果解释</a></li>
+            <li><a href="#workflow" class="text-gray-400 hover:text-white transition-colors">工作流程</a></li>
+            <li><a href="#dataset" class="text-gray-400 hover:text-white transition-colors">数据集</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-4">资源</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">API文档</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用指南</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">研究论文</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">博客</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-semibold mb-4">联系我们</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center">
+              <i class="fa fa-envelope-o text-primary mr-2"></i>
+              <a href="mailto:contact@airumordetection.com" class="text-gray-400 hover:text-white transition-colors">contact@airumordetection.com</a>
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-phone text-primary mr-2"></i>
+              <a href="tel:+8612345678901" class="text-gray-400 hover:text-white transition-colors">+86 123 4567 8901</a>
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-map-marker text-primary mr-2"></i>
+              <span class="text-gray-400">北京市海淀区中关村大街1号</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p class="text-gray-500 text-sm">© 2023 AI谣言检测系统. 保留所有权利.</p>
+          <div class="flex space-x-6 mt-4 md:mt-0">
+            <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">隐私政策</a>
+            <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">服务条款</a>
+            <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">Cookie政策</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('shadow-md');
+        navbar.classList.remove('bg-white/95');
+        navbar.classList.add('bg-white');
+      } else {
+        navbar.classList.remove('shadow-md');
+        navbar.classList.add('bg-white/95');
+        navbar.classList.remove('bg-white');
+      }
+    });
+
+    // 移动端菜单切换
+    document.getElementById('mobile-menu-button').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // 输入类型切换
+    document.querySelectorAll('.input-type-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        document.querySelectorAll('.input-type-btn').forEach(btn => {
+          btn.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+          btn.classList.add('text-neutral');
+        });
+        this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+        this.classList.remove('text-neutral');
+        document.querySelectorAll('.input-container').forEach(container => {
+          container.classList.add('hidden');
+        });
+        const type = this.getAttribute('data-type');
+        document.getElementById(`${type}-input`).classList.remove('hidden');
+      });
+    });
+
+    // 报告选项卡切换
+    document.querySelectorAll('.report-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.report-tab').forEach(t => {
+          t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+          t.classList.add('text-neutral');
+        });
+        this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+        this.classList.remove('text-neutral');
+        document.querySelectorAll('.report-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+        const tabName = this.getAttribute('data-tab');
+        document.getElementById(`${tabName}-content`).classList.remove('hidden');
+      });
+    });
+
+    // 创建解释性图表
+    function createExplanationChart() {
+      const ctx = document.getElementById('explanation-chart').getContext('2d');
+      if (window.explanationChart) {
+        window.explanationChart.destroy();
+      }
+      window.explanationChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['事实矛盾', '来源不可信', '逻辑漏洞', '情感倾向', '夸张表述', '缺乏证据'],
+          datasets: [{
+            label: '谣言特征强度',
+            data: [90, 85, 80, 75, 88, 92],
+            backgroundColor: 'rgba(245, 63, 63, 0.2)',
+            borderColor: 'rgba(245, 63, 63, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(245, 63, 63, 1)',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              angleLines: { display: true },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
+          }
+        }
+      });
+    }
+
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+          const mobileMenu = document.getElementById('mobile-menu');
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+
+    // --- MODIFIED SCRIPT FOR DYNAMIC REPORTING ---
+
+    let originalReportSections = {};
+
+    document.getElementById('detect-btn').addEventListener('click', async () => {
+        // --- Store original HTML of report sections on first run ---
+        if (!originalReportSections.keyFindings) {
+            const keyFindingsContainer = document.querySelector('#summary-content .mt-2.text-sm.text-blue-700');
+            if (keyFindingsContainer) originalReportSections.keyFindings = keyFindingsContainer.innerHTML;
+        }
+        if (!originalReportSections.evidence) {
+            const evidenceContainer = document.querySelector('#evidence-content > div:first-child > div.space-y-4');
+            if (evidenceContainer) originalReportSections.evidence = evidenceContainer.innerHTML;
+        }
+
+        const text = document.getElementById('rumor-text').value.trim();
+        const domain = document.querySelector('select').value;
+
+        if (!text) {
+            alert('请输入要检测的文本！');
+            return;
+        }
+
+        // --- Set loading state ---
+        const detectBtn = document.getElementById('detect-btn');
+        detectBtn.disabled = true;
+        detectBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 检测中...';
+
+        try {
+            const resp = await fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, domain })
+            });
+
+            if (!resp.ok) {
+                throw new Error(`服务出错: 状态 ${resp.status}`);
+            }
+
+            const { label, confidence, report } = await resp.json();
+
+            // --- Show and scroll to results ---
+            const resultContainerEl = document.getElementById('result-container');
+            resultContainerEl.classList.remove('hidden');
+            resultContainerEl.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('detection-time').textContent = '检测时间：' + new Date().toLocaleString('zh-CN');
+
+            // --- Update main result panel ---
+            const resultEl = document.getElementById('detection-result');
+            const confidenceSpan = document.getElementById('confidence-level');
+            const resultCard = resultEl.closest('.bg-light');
+            const iconWrapper = resultCard.querySelector('.w-10.h-10');
+            const icon = iconWrapper.querySelector('i');
+
+            resultEl.textContent = label;
+            confidenceSpan.textContent = (confidence * 100).toFixed(1) + '%';
+
+            // Reset classes
+            resultEl.className = 'text-2xl font-bold';
+            iconWrapper.className = 'w-10 h-10 rounded-full flex items-center justify-center mr-3';
+            icon.className = 'fa';
+
+            // Apply new classes based on label
+            if (label === '谣言') {
+                resultEl.classList.add('text-danger');
+                iconWrapper.classList.add('bg-danger/10');
+                icon.classList.add('fa-exclamation-triangle', 'text-danger');
+            } else if (label === '非谣言') {
+                resultEl.classList.add('text-success');
+                iconWrapper.classList.add('bg-success/10');
+                icon.classList.add('fa-check-circle', 'text-success');
+            } else { // '不确定'
+                resultEl.classList.add('text-warning');
+                iconWrapper.classList.add('bg-warning/10');
+                icon.classList.add('fa-question-circle', 'text-warning');
+            }
+
+            // --- Reset previously generated dynamic content ---
+            const keyFindingsContainer = document.querySelector('#summary-content .mt-2.text-sm.text-blue-700');
+            if (keyFindingsContainer && originalReportSections.keyFindings) {
+                keyFindingsContainer.innerHTML = originalReportSections.keyFindings;
+            }
+            const evidenceContainer = document.querySelector('#evidence-content > div:first-child > div.space-y-4');
+            if (evidenceContainer && originalReportSections.evidence) {
+                evidenceContainer.innerHTML = originalReportSections.evidence;
+            }
+            const existingGptCredibilitySpan = document.getElementById('gpt-credibility');
+            if (existingGptCredibilitySpan) {
+                existingGptCredibilitySpan.remove();
+            }
+
+            // --- If GPT report exists, populate details dynamically ---
+            if (report && Object.keys(report).length > 0) {
+                // a. Update "Key Findings" with `rationale`
+                if (keyFindingsContainer && report.rationale && report.rationale.length > 0) {
+                    keyFindingsContainer.innerHTML = '';
+                    const list = document.createElement('ul');
+                    list.className = 'list-disc list-inside space-y-1';
+                    report.rationale.forEach(itemText => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = itemText;
+                        list.appendChild(listItem);
+                    });
+                    keyFindingsContainer.appendChild(list);
+                } else if(keyFindingsContainer) {
+                    keyFindingsContainer.innerHTML = '<p>GPT报告未提供详细的关键依据。</p>';
+                }
+
+                // b. Update "Evidence Analysis" with `suggested_checks`
+                if (evidenceContainer && report.suggested_checks && report.suggested_checks.length > 0) {
+                    evidenceContainer.innerHTML = '';
+                    report.suggested_checks.forEach(itemText => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'bg-light rounded-lg p-4 border-l-4 border-primary';
+                        itemDiv.innerHTML = `
+                            <div class="flex justify-between">
+                                <h5 class="font-medium">GPT 查证建议</h5>
+                                <span class="text-xs text-neutral">来源: GPT-4o-mini</span>
+                            </div>
+                            <p class="text-sm mt-2">${itemText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                        `;
+                        evidenceContainer.appendChild(itemDiv);
+                    });
+                } else if(evidenceContainer) {
+                    evidenceContainer.innerHTML = '<p>GPT报告未提供详细的查证建议。</p>';
+                }
+
+                // c. Display GPT's credibility score
+                if (report.credibility !== undefined) {
+                    const gptCredibilitySpan = document.createElement('div');
+                    gptCredibilitySpan.id = 'gpt-credibility';
+                    gptCredibilitySpan.className = 'text-sm text-neutral mt-1';
+                    gptCredibilitySpan.innerHTML = `GPT可信度评估: <span class="font-medium text-black">${report.credibility}/100</span>`;
+                    confidenceSpan.parentElement.appendChild(gptCredibilitySpan);
+                }
+            }
+
+            // Re-create explanation chart (currently static, for visual purposes)
+            createExplanationChart();
+
+        } catch (err) {
+            console.error(err);
+            alert('检测请求出错：' + err.message);
+        } finally {
+            // --- Restore button state ---
+            detectBtn.disabled = false;
+            detectBtn.innerHTML = '<i class="fa fa-search mr-2"></i> 开始检测';
+        }
+    });
+
+  </script>
+</body>
+</html>

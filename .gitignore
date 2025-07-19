@@ -1,0 +1,13 @@
+__pycache__/ 
+*.py[cod] 
+.env 
+.venv/ 
+config.py 
+.idea/ 
+*.iml 
+*.log 
+*.zip 
+!data/*.csv 
+data/* 
+model/* 
+models/* 
