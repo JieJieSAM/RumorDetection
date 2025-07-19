@@ -9,5 +9,4 @@ config.py
 *.zip 
 !data/*.csv 
 data/* 
-model/* 
 models/* 
